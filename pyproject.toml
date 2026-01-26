@@ -1,0 +1,15 @@
+[project]
+name = "gr3nja_discord_bot"
+version = "0.0.0"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "Gr3nja" }]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/Gr3nja/Gr3njaDiscordBot"
+Issues = "https://github.com/Gr3nja/Gr3njaDiscordBot/issues"
+
+[build-system]
+requires = ["setuptools >= 80.0.0"]
+build-backend = "setuptools.build_meta"
