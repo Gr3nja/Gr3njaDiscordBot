@@ -159,6 +159,26 @@ CREATE TABLE IF NOT EXISTS event_reminders (
     PRIMARY KEY (event_id, reminder_key),
     FOREIGN KEY (event_id) REFERENCES events (id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS ai_guild_settings (
+    guild_id INTEGER PRIMARY KEY,
+    model_name TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS ai_conversation_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    guild_id INTEGER NOT NULL,
+    channel_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
+    content TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_conversation_scope
+ON ai_conversation_messages (guild_id, channel_id, user_id, id);
 """
 
 

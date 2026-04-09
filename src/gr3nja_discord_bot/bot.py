@@ -5,8 +5,10 @@ import logging
 import discord
 from discord.ext import commands
 
+from ai.service import AIService
 from advancement.service import AchievementAward, AchievementService
 from database import Database
+from music.service import MusicService
 from money.service import EconomyService
 from vc.service import VoiceMonitorService
 
@@ -15,10 +17,12 @@ from .config import BotConfig, load_config
 
 LOGGER = logging.getLogger(__name__)
 EXTENSIONS = (
+    "ai.cog",
     "advancement.cog",
     "buy.cog",
     "casino.cog",
     "event.cog",
+    "music.cog",
     "money.cog",
     "reaction.cog",
     "role.cog",
@@ -48,20 +52,31 @@ class Gr3njaBot(commands.Bot):
         )
         self.config = config
         self.db = Database(config.database_path)
+        self.ai = AIService(self)
         self.achievements = AchievementService(self)
         self.economy = EconomyService(self)
+        self.music = MusicService(self)
         self.voice_monitors = VoiceMonitorService(self)
 
     async def setup_hook(self) -> None:
         await self.db.connect()
         await self.db.init()
         await self.achievements.sync_builtin_definitions()
+        await self.music.connect()
 
         for extension in EXTENSIONS:
             await self.load_extension(extension)
 
+        try:
+            synced_commands = await self.tree.sync()
+            LOGGER.info("Synced %s application commands.", len(synced_commands))
+        except discord.DiscordException:
+            LOGGER.exception("Failed to sync application commands.")
+
     async def close(self) -> None:
         await self.voice_monitors.shutdown()
+        await self.music.shutdown()
+        await self.ai.close()
         await self.db.close()
         await super().close()
 
@@ -80,6 +95,21 @@ class Gr3njaBot(commands.Bot):
         if self.user is None:
             return
         LOGGER.info("Logged in as %s (%s)", self.user, self.user.id)
+
+    async def on_track_end(self, event) -> None:
+        await self.music.handle_track_end(event)
+
+    async def on_track_exception(self, event) -> None:
+        await self.music.handle_track_exception(event)
+
+    async def on_track_stuck(self, event) -> None:
+        await self.music.handle_track_stuck(event)
+
+    async def on_node_ready(self, node) -> None:
+        LOGGER.info("Lavalink node ready: %s (%s:%s)", getattr(node, "label", "unknown"), getattr(node, "host", "unknown"), getattr(node, "port", "unknown"))
+
+    async def on_node_unavailable(self, node) -> None:
+        LOGGER.warning("Lavalink node unavailable: %s", getattr(node, "label", "unknown"))
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError) -> None:
         if ctx.command is not None and hasattr(ctx.command, "on_error"):
