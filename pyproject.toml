@@ -1,11 +1,31 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "gr3nja_discord_bot"
 version = "0.1.0"
 readme = "README.md"
 requires-python = ">=3.13"
 authors = [{ name = "Gr3nja" }]
-dependencies = []
+dependencies = [
+    "aiosqlite>=0.20.0",
+    "audioop-lts>=0.2.1; python_version >= '3.13'",
+    "discord-ext-voice-recv>=0.5.2a179",
+    "discord.py[voice]>=2.5",
+    "mafic>=2.10,<3",
+    "python-dotenv>=1.0.1",
+]
 
 [project.urls]
 Homepage = "https://github.com/Gr3nja/Gr3njaDiscordBot"
 Issues = "https://github.com/Gr3nja/Gr3njaDiscordBot/issues"
+
+[project.scripts]
+gr3nja-bot = "gr3nja_discord_bot.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
