@@ -9,6 +9,7 @@ from ai.service import AIService
 from advancement.service import AchievementAward, AchievementService
 from database import Database
 from music.service import MusicService
+from summary.service import SummaryService
 from money.service import EconomyService
 from vc.service import VoiceMonitorService
 
@@ -28,6 +29,7 @@ EXTENSIONS = (
     "role.cog",
     "rule.cog",
     "shiritori.cog",
+    "summary.cog",
     "vc.cog",
     "warning.cog",
 )
@@ -56,6 +58,7 @@ class Gr3njaBot(commands.Bot):
         self.achievements = AchievementService(self)
         self.economy = EconomyService(self)
         self.music = MusicService(self)
+        self.summary = SummaryService(self)
         self.voice_monitors = VoiceMonitorService(self)
 
     async def setup_hook(self) -> None:
