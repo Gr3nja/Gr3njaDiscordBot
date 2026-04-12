@@ -177,8 +177,28 @@ CREATE TABLE IF NOT EXISTS ai_conversation_messages (
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS message_logs (
+    message_id INTEGER PRIMARY KEY,
+    guild_id INTEGER NOT NULL,
+    channel_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    author_name TEXT NOT NULL,
+    content TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    edited_at TEXT,
+    deleted_at TEXT,
+    is_command INTEGER NOT NULL DEFAULT 0,
+    reply_to_message_id INTEGER
+);
+
 CREATE INDEX IF NOT EXISTS idx_ai_conversation_scope
 ON ai_conversation_messages (guild_id, channel_id, user_id, id);
+
+CREATE INDEX IF NOT EXISTS idx_message_logs_channel_created
+ON message_logs (guild_id, channel_id, created_at DESC, message_id DESC);
+
+CREATE INDEX IF NOT EXISTS idx_message_logs_guild_created
+ON message_logs (guild_id, created_at DESC, message_id DESC);
 """
 
 

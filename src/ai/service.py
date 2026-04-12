@@ -127,6 +127,37 @@ class AIService:
         )
         return self._build_guild_model(model_key, is_override=True)
 
+    async def generate_one_shot(
+        self,
+        guild_id: int,
+        *,
+        system_prompt: str,
+        user_prompt: str,
+        max_chars: int | None = None,
+    ) -> AIResponse:
+        if not self.is_available:
+            raise RuntimeError("AI機能は未設定です。`.env` に `AI_BASE_URL` を設定してください。")
+
+        normalized_user_prompt = user_prompt.strip()
+        if not normalized_user_prompt:
+            raise ValueError("プロンプトは空にできません。")
+
+        model = await self.get_model_status(guild_id)
+        if not model.api_model_name.strip():
+            raise RuntimeError(
+                "AIモデルが未設定です。`.env` の `AI_DEFAULT_MODEL` か `/ai model <modelname>` を設定してください。"
+            )
+
+        messages: list[ChatMessage] = []
+        normalized_system_prompt = system_prompt.strip()
+        if normalized_system_prompt:
+            messages.append({"role": "system", "content": normalized_system_prompt})
+        messages.append({"role": "user", "content": normalized_user_prompt})
+
+        reply = await self._client.generate_reply(model.api_model_name, messages)
+        limit = self.bot.config.ai.max_response_chars if max_chars is None else max_chars
+        return AIResponse(reply=_limit_text(reply, limit), model_name=model.label)
+
     async def generate_reply(self, scope: ConversationScope, user_message: str) -> AIResponse:
         if not self.is_available:
             raise RuntimeError("AI機能は未設定です。`.env` に `AI_BASE_URL` を設定してください。")

@@ -41,6 +41,15 @@ class MusicConfig:
 
 
 @dataclass(slots=True)
+class SummaryConfig:
+    log_retention_days: int
+    default_message_count: int
+    max_message_count: int
+    chunk_char_limit: int
+    enable_history_backfill: bool
+
+
+@dataclass(slots=True)
 class BotConfig:
     token: str
     prefix: str
@@ -60,6 +69,7 @@ class BotConfig:
     voice_min_clip_seconds: float
     ai: AIConfig
     music: MusicConfig
+    summary: SummaryConfig
 
 
 def load_config() -> BotConfig:
@@ -109,5 +119,13 @@ def load_config() -> BotConfig:
             default_search=os.getenv("MUSIC_DEFAULT_SEARCH", "ytsearch").strip() or "ytsearch",
             default_volume=max(0, min(1000, int(os.getenv("MUSIC_DEFAULT_VOLUME", "75")))),
             idle_disconnect_seconds=max(10, int(os.getenv("MUSIC_IDLE_DISCONNECT_SECONDS", "300"))),
+        ),
+        summary=SummaryConfig(
+            log_retention_days=max(1, int(os.getenv("SUMMARY_LOG_RETENTION_DAYS", "30"))),
+            default_message_count=max(20, int(os.getenv("SUMMARY_DEFAULT_MESSAGE_COUNT", "100"))),
+            max_message_count=max(50, int(os.getenv("SUMMARY_MAX_MESSAGE_COUNT", "300"))),
+            chunk_char_limit=max(2000, int(os.getenv("SUMMARY_CHUNK_CHAR_LIMIT", "6000"))),
+            enable_history_backfill=os.getenv("SUMMARY_ENABLE_HISTORY_BACKFILL", "true").strip().lower()
+            in {"1", "true", "yes", "on"},
         ),
     )
